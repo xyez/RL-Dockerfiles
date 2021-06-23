@@ -1,0 +1,54 @@
+FROM xyez/python3.8-cu10.1-cudnn8-ubuntu18.04:apt0
+ENV LANG="en_US.UTF-8" LC_CTYPE="en_US.UTF-8" LC_NUMERIC="zh_CN.UTF-8" LC_TIME="zh_CN.UTF-8" LC_COLLATE="en_US.UTF-8" LC_MONETARY="zh_CN.UTF-8" LC_MESSAGES="en_US.UTF-8" LC_PAPER="zh_CN.UTF-8" LC_NAME="zh_CN.UTF-8" LC_ADDRESS="zh_CN.UTF-8" LC_TELEPHONE="zh_CN.UTF-8" LC_MEASUREMENT="zh_CN.UTF-8" LC_IDENTIFICATION="zh_CN.UTF-8"
+RUN wget -O ~/get-pip.py https://bootstrap.pypa.io/get-pip.py && \
+#    wget -O ~/get-pip.py https://bootstrap.pypa.io/get-pip.py && \
+    python3.8 ~/get-pip.py && \
+    rm ~/get-pip.py && \
+    python3 -m pip install pip -U && \
+    pip3 config set global.index-url https://mirrors.aliyun.com/pypi/simple && \
+    pip3 install --upgrade pip && \
+    pip3 --no-cache-dir install --upgrade \
+    	# base
+        setuptools \
+        numpy \
+        scipy \
+        pandas \
+        cloudpickle \
+        scikit-learn \
+        matplotlib \
+        opencv-python \
+        Cython \
+        ranger-fm \
+        scikit-image plotly jupyter ipykernel jupyterlab sklearn Pillow \
+        seaborn \
+        # dependency
+        PyQt5 \
+        # rl
+        gym[atari] roboschool stable-baselines \
+        mpi4py \
+        # tools
+        zmqnumpy \
+        pyftpdlib \
+        tmuxp \
+        tqdm \
+        pyopengl \
+        typing \
+        pyyaml \
+        protobuf \
+        visdom \
+        future \
+        # others
+        empy \
+        ipdb \
+        imageio \
+        jsonpickle \
+        gtimer \
+        path.py \
+        cached-property \
+        flask \
+        joblib \
+        six \
+        pyprind \
+        virtualenv glog psutil pgrep \
+        glfw imageio pycparser cffi lockfile absl-py && \
+    rm -rf /var/lib/apt/lists/* /tmp/*
