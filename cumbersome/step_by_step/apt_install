@@ -1,5 +1,4 @@
 FROM nvidia/cuda:10.1-cudnn8-runtime-ubuntu18.04
-LABEL maintainer "zeyx <here@where.com>"
 RUN sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \
     rm /etc/apt/sources.list.d/* && \
     # curl -s -L https://nvidia.github.io/libnvidia-container/gpgkey | apt-key add - && \
