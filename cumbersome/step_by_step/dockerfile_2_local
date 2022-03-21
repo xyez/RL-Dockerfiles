@@ -27,51 +27,34 @@ RUN USER=docker && \
     printf "user: $USER\ngroup: $GROUP\npaths:\n  - /home/$USER" > /etc/fixuid/config.yml && \
     printf "#!/bin/bash\nvar=\$(ls -nd \$1)\ntheuid=\`echo \$var|awk '{print \$3}'\`\nthegid=\`echo \$var|awk '{print \$4}'\`\nusermod -u \$theuid docker\nusermod -g 0 docker\ndelgroup docker\naddgroup --gid \$thegid docker\nusermod -g \$thegid docker\nchown -R docker:docker /home/docker" > /usr/local/bin/fixids && \
     chmod +x /usr/local/bin/fixids && \
-    apt-get clean && \
-    apt-get autoremove && \
-    rm -rf /var/lib/apt/lists/* /tmp/*
-USER docker:docker
-RUN USER=docker && \
-    LOCALHOST=http://127.0.0.1:8000 && \
-    cd /home/$USER/ && \
+    # user config
     mkdir -p /home/$USER/.config /home/$USER/.local/bin && \
-    sudo cp -r /root/.config/pip /home/$USER/.config/pip && \
-    sudo cp -r /root/.oh-my-zsh /home/$USER/.oh-my-zsh && \
+    cp -r /root/.config/pip /home/$USER/.config/pip && \
+    cp -r /root/.oh-my-zsh /home/$USER/.oh-my-zsh && \
     wget $LOCALHOST/zshrc -O /home/$USER/.zshrc && \
     wget $LOCALHOST/tmux.conf -O /home/$USER/.tmux.conf && \
-    sudo chown -R $USER:$USER /home/$USER && \
-#   for mujoco
-    mkdir -p /home/$USER/.mujoco && \
-    cd /home/$USER/.mujoco && \
-    wget https://www.roboti.us/download/mujoco200_linux.zip && \
-    unzip mujoco200_linux.zip && \
-    mv mujoco200_linux mujoco200 && \
-    rm mujoco200_linux.zip && \
-    wget $LOCALHOST/mjkey.txt -P /home/$USER/.mujoco && \
-#   mujoco dependency
-    # pip3 --no-cache-dir install --upgrade pyproject.toml && \
-    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/.mujoco/mujoco200/bin pip3 --no-cache-dir install --upgrade mujoco-py==2.0.2.13 && \
-    wget $LOCALHOST/dmc2gym-master.zip && sudo pip3 --no-cache-dir install dmc2gym-master.zip && rm dmc2gym-master.zip && \
-    wget $LOCALHOST/metaworld-master.zip && sudo pip3 --no-cache-dir install metaworld-master.zip && rm metaworld-master.zip && \
-    wget $LOCALHOST/smac-master.zip && sudo pip3 --no-cache-dir install smac-master.zip && rm smac-master.zip && \
-    #sudo pip3 --no-cache-dir install git+git://github.com/denisyarats/dmc2gym.git && \
-    #sudo pip3 --no-cache-dir install git+https://github.com.cnpmjs.org/rlworkgroup/metaworld.git@master#egg=metaworld && \
-    #sudo pip3 --no-cache-dir install git+https://github.com/oxwhirl/smac.git && \
-#   for zsh plugins
     wget -qO- $LOCALHOST/zsh-syntax-highlighting.tar | tar xf - && \
     wget -qO- $LOCALHOST/zsh-autosuggestions.tar | tar xf -  && \
     wget -qO- $LOCALHOST/zsh-completions.tar | tar xf -  && \
-    mv zsh-syntax-highlighting ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting && \
-    mv zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions && \
-    mv zsh-completions ${ZSH_CUSTOM:=~/.oh-my-zsh/custom}/plugins/zsh-completions && \
-    # git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting && \
-    # git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions && \
-    # git clone https://github.com/zsh-users/zsh-completions ${ZSH_CUSTOM:=~/.oh-my-zsh/custom}/plugins/zsh-completions && \
-#   install others
-    # sudo apt-get update && \
-    # sudo DEBIAN_FRONTEND=noninteractive apt-get install -y evince eog && \
-    sudo apt-get clean && \
-    sudo apt-get autoremove && \
-    sudo rm -rf /var/lib/apt/lists/* /tmp/*
-USER root:root
-
+    mv zsh-syntax-highlighting /home/$USER/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting && \
+    mv zsh-autosuggestions /home/$USER/.oh-my-zsh/custom/plugins/zsh-autosuggestions && \
+    mv zsh-completions /home/$USER/.oh-my-zsh/custom/plugins/zsh-completions && \
+    # mujoco
+    mkdir -p /home/$USER/.mujoco && \
+    # wget https://mujoco.org/download/mujoco210-linux-x86_64.tar.gz -O - | tar -zx -C /home/$USER/.mujoco && \
+    wget $LOCALHOST//mujoco210-linux-x86_64.tar.gz -O - | tar -zx -C /home/$USER/.mujoco && \
+    chown -R $USER:$USER /home/$USER && \
+    su docker -c 'pip3 --no-cache-dir install mujoco-py --user' && \
+    chown -R $USER:$USER /home/$USER && \
+    apt-get clean && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/* /tmp/*
+RUN git config --global url."https://".insteadOf git:// && \
+    # mujoco
+    pip3 --no-cache-dir install --upgrade mujoco && \
+    pip3 --no-cache-dir install git+git://github.com/denisyarats/dmc2gym.git && \
+    pip3 --no-cache-dir install git+https://github.com/rlworkgroup/metaworld.git@master#egg=metaworld && \
+    pip3 --no-cache-dir install git+https://github.com/oxwhirl/smac.git && \
+    apt-get clean && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/* /tmp/*

@@ -1,13 +1,16 @@
-FROM xyez/python3.8-torch1.8.2-cuda11.1:local0
-RUN pip3 --no-cache-dir install torch==1.11.0+cu113 torchvision==0.12.0+cu113 torchaudio==0.11.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html && \
-    pip3 --no-cache-dir install --upgrade enum34 tensorboard \
-    tensorflow-gpu \
+FROM xyez/python3.8-cuda11.3:local0
+RUN python3 -m pip install --upgrade pip && \
+    pip3 --no-cache-dir install torch==1.11.0+cu113 torchvision==0.12.0+cu113 torchaudio==0.11.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html && \
     # EfficientZero
-    kornia && \
-    sudo apt-get clean && \
-    sudo apt-get autoremove && \
-    sudo rm -rf /var/lib/apt/lists/* /tmp/*pip3 --no-cache-dir install --upgrade \
-    ray 'ray[default]' 'ray[data]' dask 'ray[tune]' 'ray[serve]' scikit-learn 'ray[rllib]' && \
+    pip3 --no-cache-dir install --upgrade \
+    kornia ray 'ray[default]' 'ray[data]' dask 'ray[tune]' 'ray[serve]' scikit-learn 'ray[rllib]' && \
+    apt-get clean && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/* /tmp/*
+RUN pip3 --no-cache-dir install --upgrade \
+    enum34 tensorboard \
+    tensorflow-gpu \
+    && \
     apt-get clean && \
     apt-get autoremove && \
     rm -rf /var/lib/apt/lists/* /tmp/*
