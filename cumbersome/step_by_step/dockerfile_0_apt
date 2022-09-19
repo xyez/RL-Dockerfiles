@@ -77,6 +77,8 @@ RUN apt-get update && \
     libsdl2-dev \
     libassimp-dev \
     libboost-python-dev \
+    # dns tools
+    dnsutils \
     # no use
     # terminator \
     # desktop

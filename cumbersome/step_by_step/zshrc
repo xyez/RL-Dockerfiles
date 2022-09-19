@@ -115,41 +115,35 @@ function rrc {
 }
 bindkey '^@' set-mark-command
 bindkey '^A' beginning-of-line
-bindkey '^B' backward-char
-bindkey '^D' delete-char-or-list
+# bindkey '^B' forbidden
+# bindkey '^C' forbidden
+bindkey '^D' kill-whole-line
 bindkey '^E' end-of-line
-bindkey '^F' forward-char
-bindkey '^G' send-break
-bindkey '^H' backward-delete-char
-bindkey '^I' expand-or-complete
-bindkey '^J' accept-line
-bindkey '^K' kill-line
+bindkey '^F' forward-word
+bindkey '^G' backward-word
+# bindkey '^H' None
+# bindkey '^I' forbidden
+bindkey '^J' down-line-or-beginning-search
+bindkey '^K' up-line-or-beginning-search
 bindkey '^L' clear-screen
 bindkey '^M' accept-line
 bindkey '^N' down-line-or-history
-bindkey '^O' accept-line-and-down-history
+# bindkey '^O' None
 bindkey '^P' up-line-or-history
-bindkey '^Q' push-line
+# bindkey '^Q' None
 bindkey '^R' history-incremental-search-backward
 bindkey '^S' history-incremental-search-forward
-bindkey '^T' transpose-chars
-bindkey '^U' kill-whole-line
-bindkey '^V' quoted-insert
+# bindkey '^T' None
+bindkey '^U' undo
+bindkey '^V' vi-cmd-mode
 bindkey '^W' backward-kill-word
-bindkey '^X^B' vi-match-bracket
-bindkey '^X^E' edit-command-line
-bindkey '^X^F' vi-find-next-char
-bindkey '^X^J' vi-join
-bindkey '^X^K' kill-buffer
-bindkey '^X^N' infer-next-history
-bindkey '^X^O' overwrite-mode
-bindkey '^X^R' _read_comp
-bindkey '^X^U' undo
-bindkey '^X^V' vi-cmd-mode
-bindkey '^X^X' exchange-point-and-mark
+bindkey '^X' edit-command-line
+# bindkey '^Y' None
+# bindkey '^Z' forbidden
 bindkey '^[[1~' beginning-of-line
 bindkey '^[[3~' delete-char-or-list
 bindkey '^[[4~' end-of-line
+
 # inverse search
 setopt noincappendhistory
 setopt nosharehistory
@@ -162,3 +156,48 @@ export MJLIB_PATH=$HOME/.mujoco/mujoco210/bin/libmujoco210.so
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/.mujoco/mujoco210/bin
 export DISABLE_AUTO_TITLE='true'
 
+# >>> conda initialize >>>
+CONDAPATH=/home/docker/.local/softwares/anaconda3
+# !! Contents within this block are managed by 'conda init' !!
+#__conda_setup=`("$CONDAPATH/bin/conda" "shell.bash" "hook" 2> /dev/null)`
+#if [ $? -eq 0 ]; then
+#    eval "$__conda_setup"
+#else
+#    if [ -f "$CONDAPATH/etc/profile.d/conda.sh" ]; then
+#        . "$CONDAPATH/etc/profile.d/conda.sh"
+#    else
+#        export PATH="$CONDAPATH/bin:$PATH"
+#    fi
+#fi
+#unset __conda_setup
+#conda deactivate
+# <<< conda initialize <<<
+
+# >>> remote copy >>>
+function rcopy(){
+  if [[ $1 =~ : ]];then
+    if [[ ${1: -1} = / ]];then
+        1=${1%?}
+    fi
+    echo $1
+    tmpfile="$(mktemp -d)"
+    rsync -ae ssh "$1/{.rsync.exclude,.rsync.include}" $tmpfile
+    rsync_exclude=$tmpfile/.rsync.exclude
+    rsync_include=$tmpfile/.rsync.include
+  else
+    rsync_exclude=$1/.rsync.exclude
+    rsync_include=$1/.rsync.include
+  fi
+  rsync_args="-ave ssh --prune-empty-dirs"
+  if [ -f $rsync_exclude ];then
+    rsync_args="$rsync_args --exclude-from=$rsync_exclude"
+  fi
+  if [ -f $rsync_include ];then
+    rsync_args="$rsync_args --include-from=$rsync_include --exclude='*'"
+  fi
+  echo $rsync_args|xargs rsync $1 $2
+  if [ -d $tmpfile ];then
+    rm -rf $tmpfile
+  fi
+}
+# <<< remote copy <<<
