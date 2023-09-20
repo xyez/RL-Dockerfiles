@@ -1,4 +1,4 @@
-FROM xyez/python3.8-cuda11.3:pip0
+FROM docker.kt.io/rlg1/yaoxin/ubuntu22.04:base-v1
 RUN USER=docker && \
     GROUP=docker && \
     LOCALHOST=http://127.0.0.1:8000 && \
@@ -7,7 +7,8 @@ RUN USER=docker && \
     useradd --uid 999999 -g $GROUP -ms /bin/zsh $USER && \
     adduser $USER sudo && \
 #   install zsh
-    sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" && \
+    sh -c "$(curl -fsSL $LOCALHOST/script/ohmyzsh-install.sh)" && \
+    # sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" && \
 #   set zsh default
     sed -i "s/bash/zsh/g" /etc/passwd && \
 #   set sudo no passwd
@@ -17,7 +18,7 @@ RUN USER=docker && \
     sed -i '/X11Forwarding yes/aX11UseLocalhost no' /etc/ssh/sshd_config && \
 #   fixuid
     # wget https://github.com/boxboat/fixuid/releases/download/v0.5/fixuid-0.5-linux-amd64.tar.gz && \
-    wget $LOCALHOST/fixuid-0.5-linux-amd64.tar.gz && \
+    wget $LOCALHOST/package/fixuid-0.5-linux-amd64.tar.gz && \
     tar zxf ./fixuid-0.5-linux-amd64.tar.gz && \
     mv fixuid /usr/local/bin/fixuid && \
     rm ./fixuid-0.5-linux-amd64.tar.gz && \
@@ -31,30 +32,37 @@ RUN USER=docker && \
     mkdir -p /home/$USER/.config /home/$USER/.local/bin && \
     cp -r /root/.config/pip /home/$USER/.config/pip && \
     cp -r /root/.oh-my-zsh /home/$USER/.oh-my-zsh && \
-    wget $LOCALHOST/zshrc -O /home/$USER/.zshrc && \
-    wget $LOCALHOST/tmux.conf -O /home/$USER/.tmux.conf && \
-    wget -qO- $LOCALHOST/zsh-syntax-highlighting.tar | tar xf - && \
-    wget -qO- $LOCALHOST/zsh-autosuggestions.tar | tar xf -  && \
-    wget -qO- $LOCALHOST/zsh-completions.tar | tar xf -  && \
-    mv zsh-syntax-highlighting /home/$USER/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting && \
-    mv zsh-autosuggestions /home/$USER/.oh-my-zsh/custom/plugins/zsh-autosuggestions && \
-    mv zsh-completions /home/$USER/.oh-my-zsh/custom/plugins/zsh-completions && \
-    # mujoco
-    mkdir -p /home/$USER/.mujoco && \
-    # wget https://mujoco.org/download/mujoco210-linux-x86_64.tar.gz -O - | tar -zx -C /home/$USER/.mujoco && \
-    wget $LOCALHOST//mujoco210-linux-x86_64.tar.gz -O - | tar -zx -C /home/$USER/.mujoco && \
-    chown -R $USER:$USER /home/$USER && \
-    su docker -c 'pip3 --no-cache-dir install mujoco-py --user' && \
+    wget $LOCALHOST/config/zshrc -O /home/$USER/.zshrc && \
+    wget $LOCALHOST/config/condarc -O /home/$USER/.condarc && \
+    wget $LOCALHOST/config/tmux.conf -O /home/$USER/.tmux.conf && \
+    wget -qO- $LOCALHOST/package/zsh/zsh-syntax-highlighting.tar.gz | tar zxf - && \
+    wget -qO- $LOCALHOST/package/zsh/zsh-autosuggestions.tar.gz | tar zxf -  && \
+    wget -qO- $LOCALHOST/package/zsh/zsh-completions.tar.gz | tar zxf -  && \
+    mv zsh-syntax-highlighting* /home/$USER/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting && \
+    mv zsh-autosuggestions* /home/$USER/.oh-my-zsh/custom/plugins/zsh-autosuggestions && \
+    mv zsh-completions* /home/$USER/.oh-my-zsh/custom/plugins/zsh-completions && \
     chown -R $USER:$USER /home/$USER && \
     apt-get clean && \
     apt-get autoremove && \
     rm -rf /var/lib/apt/lists/* /tmp/*
-RUN git config --global url."https://".insteadOf git:// && \
+RUN USER=docker && \
+    GROUP=docker && \
+    LOCALHOST=http://127.0.0.1:8000 && \
+    PIPDIR=/usr/local/lib/python3.11/dist-packages && \
+    # mujoco
+    mkdir -p /home/$USER/.mujoco && \
+    # wget https://mujoco.org/download/mujoco210-linux-x86_64.tar.gz -O - | tar -zx -C /home/$USER/.mujoco && \
+    wget $LOCALHOST/package/mujoco210-linux-x86_64.tar.gz -O - | tar -zx -C /home/$USER/.mujoco && \
+    chown -R $USER:$USER /home/$USER && \
+    su docker -c 'pip3 --no-cache-dir install mujoco-py --user' && \
     # mujoco
     pip3 --no-cache-dir install --upgrade mujoco && \
-    pip3 --no-cache-dir install git+git://github.com/denisyarats/dmc2gym.git && \
-    pip3 --no-cache-dir install git+https://github.com/rlworkgroup/metaworld.git@master#egg=metaworld && \
-    pip3 --no-cache-dir install git+https://github.com/oxwhirl/smac.git && \
+    # pip3 --no-cache-dir install git+git://github.com/denisyarats/dmc2gym.git && \
+    # pip3 --no-cache-dir install git+https://github.com/rlworkgroup/metaworld.git@master#egg=metaworld && \
+    # pip3 --no-cache-dir install git+https://github.com/oxwhirl/smac.git && \
+    wget -q -O tmp.zip $LOCALHOST/package/rl/dmc2gym-master.zip && unzip tmp.zip -d $PIPDIR && rm tmp.zip && pip3 --no-cache-dir install -e $PIPDIR/dmc2gym-master && \
+    wget -q -O tmp.zip $LOCALHOST/package/rl/smac-master.zip && unzip tmp.zip -d $PIPDIR && rm tmp.zip && pip3 --no-cache-dir install -e $PIPDIR/smac-master && \
+    wget -q -O tmp.zip $LOCALHOST/package/rl/metaworld-master.zip && unzip tmp.zip -d $PIPDIR && rm tmp.zip && pip3 --no-cache-dir install -e $PIPDIR/Metaworld-master && \
     apt-get clean && \
     apt-get autoremove && \
     rm -rf /var/lib/apt/lists/* /tmp/*

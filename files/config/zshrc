@@ -100,18 +100,18 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-set -o  vi
+set -o vi
 export PATH=$HOME/.local/bin:$PATH
-export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libGLEW.so
+#export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libGLEW.so
 export TERM=xterm-256color
 function rrc {
-    tempfile="$(mktemp -t tmp.XXXXXX)"
-    ranger --choosedir="$tempfile" "${@:-$(pwd)}"
-    test -f "$tempfile" &&
-    if [ "$(cat -- "$tempfile")" != "$(echo -n `pwd`)" ]; then
-        cd -- "$(cat "$tempfile")"
+  tempfile="$(mktemp -t tmp.XXXXXX)"
+  ranger --choosedir="$tempfile" "${@:-$(pwd)}"
+  test -f "$tempfile" &&
+    if [ "$(cat -- "$tempfile")" != "$(echo -n $(pwd))" ]; then
+      cd -- "$(cat "$tempfile")"
     fi
-    rm -f -- "$tempfile"
+  rm -f -- "$tempfile"
 }
 bindkey '^@' set-mark-command
 bindkey '^A' beginning-of-line
@@ -121,7 +121,7 @@ bindkey '^D' kill-whole-line
 bindkey '^E' end-of-line
 bindkey '^F' forward-word
 bindkey '^G' backward-word
-# bindkey '^H' None
+bindkey '^H' vi-backward-blank-word
 # bindkey '^I' forbidden
 bindkey '^J' down-line-or-beginning-search
 bindkey '^K' up-line-or-beginning-search
@@ -130,10 +130,10 @@ bindkey '^M' accept-line
 bindkey '^N' down-line-or-history
 # bindkey '^O' None
 bindkey '^P' up-line-or-history
-# bindkey '^Q' None
+bindkey '^Q' kill-word
 bindkey '^R' history-incremental-search-backward
 bindkey '^S' history-incremental-search-forward
-# bindkey '^T' None
+bindkey '^T' forward-word
 bindkey '^U' undo
 bindkey '^V' vi-cmd-mode
 bindkey '^W' backward-kill-word
@@ -159,25 +159,25 @@ export DISABLE_AUTO_TITLE='true'
 # >>> conda initialize >>>
 CONDAPATH=/home/docker/.local/softwares/anaconda3
 # !! Contents within this block are managed by 'conda init' !!
-#__conda_setup=`("$CONDAPATH/bin/conda" "shell.bash" "hook" 2> /dev/null)`
-#if [ $? -eq 0 ]; then
-#    eval "$__conda_setup"
-#else
-#    if [ -f "$CONDAPATH/etc/profile.d/conda.sh" ]; then
-#        . "$CONDAPATH/etc/profile.d/conda.sh"
-#    else
-#        export PATH="$CONDAPATH/bin:$PATH"
-#    fi
-#fi
-#unset __conda_setup
-#conda deactivate
+__conda_setup=$( ("$CONDAPATH/bin/conda" "shell.bash" "hook" 2>/dev/null))
+if [ $? -eq 0 ]; then
+  eval "$__conda_setup"
+else
+  if [ -f "$CONDAPATH/etc/profile.d/conda.sh" ]; then
+    . "$CONDAPATH/etc/profile.d/conda.sh"
+  else
+    export PATH="$CONDAPATH/bin:$PATH"
+  fi
+fi
+unset __conda_setup
+# conda deactivate
 # <<< conda initialize <<<
 
 # >>> remote copy >>>
-function rcopy(){
-  if [[ $1 =~ : ]];then
-    if [[ ${1: -1} = / ]];then
-        1=${1%?}
+function rcopy() {
+  if [[ $1 =~ : ]]; then
+    if [[ ${1: -1} = / ]]; then
+      1=${1%?}
     fi
     echo $1
     tmpfile="$(mktemp -d)"
@@ -189,14 +189,14 @@ function rcopy(){
     rsync_include=$1/.rsync.include
   fi
   rsync_args="-ave ssh --prune-empty-dirs"
-  if [ -f $rsync_exclude ];then
+  if [ -f $rsync_exclude ]; then
     rsync_args="$rsync_args --exclude-from=$rsync_exclude"
   fi
-  if [ -f $rsync_include ];then
+  if [ -f $rsync_include ]; then
     rsync_args="$rsync_args --include-from=$rsync_include --exclude='*'"
   fi
-  echo $rsync_args|xargs rsync $1 $2
-  if [ -d $tmpfile ];then
+  echo $rsync_args | xargs rsync $1 $2
+  if [ -d $tmpfile ]; then
     rm -rf $tmpfile
   fi
 }

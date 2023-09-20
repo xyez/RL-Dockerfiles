@@ -1,16 +1,37 @@
-FROM xyez/python3.8-cuda11.3:local0
+FROM docker.kt.io/rlg1/yaoxin/ubuntu22.04:base-v2
+# pytorch
 RUN python3 -m pip install --upgrade pip && \
-    pip3 --no-cache-dir install torch==1.11.0+cu113 torchvision==0.12.0+cu113 torchaudio==0.11.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html && \
-    # EfficientZero
-    pip3 --no-cache-dir install --upgrade \
-    kornia ray 'ray[default]' 'ray[data]' dask 'ray[tune]' 'ray[serve]' scikit-learn 'ray[rllib]' && \
-    apt-get clean && \
-    apt-get autoremove && \
-    rm -rf /var/lib/apt/lists/* /tmp/*
+    pip3 --no-cache-dir install torch torchvision torchaudio
+# tensorflow
 RUN pip3 --no-cache-dir install --upgrade \
     enum34 tensorboard \
-    tensorflow-gpu \
-    && \
+    tensorflow
+# # ray
+# RUN python3 -m pip install --upgrade pip && \
+#     kornia ray 'ray[default]' 'ray[data]' dask 'ray[tune]' 'ray[serve]' 'ray[rllib]'
+# aim
+RUN pip3 --no-cache-dir install --upgrade \
+    aim wandb
+# jupyter
+RUN pip3 --no-cache-dir install --upgrade \
+    jupyter jupyterlab jupyterlab notebook jupyterhub nbclassic
+# go
+RUN USER=docker && \
+    GROUP=docker && \
+    LOCALHOST=http://127.0.0.1:8000 && \
+    wget -qO- $LOCALHOST/package/go/go1.20.8.linux-amd64.tar.gz | tar zxf - -C /usr/local/ && \
+    ln -s /usr/local/go/bin/go /usr/local/bin/go && \
+    mkdir -p /opt/go && \
+    go env -w GO111MODULE=on && \
+    go env -w GOPROXY=https://goproxy.cn,direct && \
+    go env -w GOPATH=/opt/go && \
+    rm -rf /var/lib/apt/lists/* /tmp/*
+# mysql
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    # not use hostnetwork!!
+    mysql-server && \
+    sed -i.bak 's/127.0.0.1/0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf && \
     apt-get clean && \
     apt-get autoremove && \
     rm -rf /var/lib/apt/lists/* /tmp/*

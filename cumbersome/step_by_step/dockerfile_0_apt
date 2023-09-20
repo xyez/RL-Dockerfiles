@@ -1,5 +1,5 @@
-FROM nvidia/cuda:11.3.0-cudnn8-devel-ubuntu18.04
-RUN sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \
+FROM nvidia/cuda:11.7.1-cudnn8-devel-ubuntu22.04
+RUN sed -i.bak 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \
     rm /etc/apt/sources.list.d/* && \
     # curl -s -L https://nvidia.github.io/libnvidia-container/gpgkey | apt-key add - && \
 # install necessary
@@ -7,22 +7,22 @@ RUN sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list &&
     apt-get update && apt-get install -y software-properties-common apt-utils wget apt-transport-https && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    qt5-default \
+    qtbase5-dev qt5-qmake \
     python2.7 python2.7-dev python-pip && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    python3.8 python3.8-dev python3.8-tk python3-distutils-extra && \
-    ln -s /usr/bin/python3.8-config /usr/local/bin/python3-config && \
-    ln -s /usr/bin/python3.8 /usr/local/bin/python3 && \
+    python3.11 python3.11-dev python3.11-tk python3-distutils-extra && \
+    ln -s /usr/bin/python3.11-config /usr/local/bin/python3-config && \
+    ln -s /usr/bin/python3.11 /usr/local/bin/python3 && \
     apt-get clean && \
     apt-get autoremove && \
     rm -rf /var/lib/apt/lists/* /tmp/*
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
     # python2 packaeg
-    python-numpy \
-    python-dev \
-    python-opengl \
-    python-opencv \
+    # python3-numpy \
+    python3-dev \
+    python3-opengl \
+    python3-opencv \
     # PIL
     libfreetype6-dev \
     # opencv
@@ -47,7 +47,7 @@ RUN apt-get update && \
     iptables firewalld \
     mplayer iputils-ping \
     # project
-    openssl1.0 libboost-program-options1.62.0 libboost-filesystem1.62.0 \
+    # openssl1.0 libboost-program-options1.62.0 libboost-filesystem1.62.0 \
     # xclock
     x11-apps mesa-utils \
     # pciture and pdf viewer
@@ -68,8 +68,6 @@ RUN apt-get update && \
     xvfb \
     xorg-dev \ 
     libtinyxml-dev \
-    # go
-    golang \
     # c++?
     swig \
     # ???
@@ -84,13 +82,32 @@ RUN apt-get update && \
     # desktop
     # xpra \
     # feedgnuplot \
+    dnsutils \
+    # for jupyter
+    bzip2 \
+    tini \
+    fonts-liberation \
+    pandoc \
+    run-one \
+    nano-tiny \
+    openssh-client \
+    less \
+    texlive-xetex \
+    texlive-fonts-recommended \
+    texlive-plain-generic \
+    xclip \
     && \
-#    language
+    # language
+    # echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
     locale-gen en_US.UTF-8 zh_CN.UTF-8 && \
+    # time zone
+    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
+    echo 'Asia/Shanghai' >/etc/timezone && \
     # sed -i '$a\LANG="en_US.UTF-8"\nLC_CTYPE="en_US.UTF-8"\nLC_NUMERIC="zh_CN.UTF-8"\nLC_TIME="zh_CN.UTF-8"\nLC_COLLATE="en_US.UTF-8"\nLC_MONETARY="zh_CN.UTF-8"\nLC_MESSAGES="en_US.UTF-8"\nLC_PAPER="zh_CN.UTF-8"\nLC_NAME="zh_CN.UTF-8"\nLC_ADDRESS="zh_CN.UTF-8"\nLC_TELEPHONE="zh_CN.UTF-8"\nLC_MEASUREMENT="zh_CN.UTF-8"\nLC_IDENTIFICATION="zh_CN.UTF-8"' /etc/default/locale && \
     # config ssh
-#    sed -i 's/.*PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
-#    ldconfig && \
+    # sed -i 's/.*PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    # ldconfig && \
+    git config --global url."https://".insteadOf git:// && \
     apt-get clean && \
     apt-get autoremove && \
     rm -rf /var/lib/apt/lists/* /tmp/*

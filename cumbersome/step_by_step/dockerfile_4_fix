@@ -1,13 +1,10 @@
-FROM xyez/python3.8-cuda11.3:torch1.11
-RUN USER=docker && \
-    GROUP=docker && \
-    LOCALHOST=http://127.0.0.1:8000 && \
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    dnsutils && \
-    wget $LOCALHOST/zshrc -O /home/$USER/.zshrc && \
-    chown -R $USER:$USER /home/$USER && \
+FROM docker.kt.io/rlg1/yaoxin/ubuntu22.04:base-v3
+RUN mv /usr/local/bin/jupyter-server /usr/local/bin/jupyter-server.bak && \
+    echo '#!/bin/bash' > /usr/local/bin/jupyter-server && \
+    echo 'su docker -c /usr/local/bin/jupyter-server' >> /usr/local/bin/jupyter-server && \
     apt-get clean && \
     apt-get autoremove && \
     rm -rf /var/lib/apt/lists/* /tmp/*
+EXPOSE 8888
+# xyez/python3.8-cuda11.3:torch1.11
 #ENTRYPOINT ["/entrypoint.sh"]
