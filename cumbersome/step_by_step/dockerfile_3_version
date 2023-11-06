@@ -25,6 +25,8 @@ RUN USER=docker && \
     go env -w GO111MODULE=on && \
     go env -w GOPROXY=https://goproxy.cn,direct && \
     go env -w GOPATH=/opt/go && \
+    cp -r /root/.config/go /home/$USER/.config/go && \
+    chown -R $USER:$USER /home/$USER && \
     rm -rf /var/lib/apt/lists/* /tmp/*
 # mysql
 RUN apt-get update && \

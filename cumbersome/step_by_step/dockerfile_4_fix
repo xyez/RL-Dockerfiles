@@ -1,9 +1,32 @@
 FROM docker.kt.io/rlg1/yaoxin/ubuntu22.04:base-v3
-RUN mv /usr/local/bin/jupyter-server /usr/local/bin/jupyter-server.bak && \
-    echo '#!/bin/bash' > /usr/local/bin/jupyter-server && \
-    echo 'su docker -c /usr/local/bin/jupyter-server' >> /usr/local/bin/jupyter-server && \
+# RUN mv /usr/local/bin/jupyter-server /usr/local/bin/jupyter-server.ini && \
+    # echo '#!/bin/bash' > /usr/local/bin/jupyter-server && \
+    # echo 'su docker -c /usr/local/bin/jupyter-server.ini' >> /usr/local/bin/jupyter-server && \
+    # chmod +x /usr/local/bin/jupyter-server && \
+RUN jupyter-notebook --generate-config && \
+    sed -i '/c.ServerApp.ip/ac.ServerApp.ip = "0.0.0.0"\nc.ServerApp.open_browser = False' /root/.jupyter/jupyter_notebook_config.py && \
     apt-get clean && \
     apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/* /tmp/*
+# tnsecuda
+RUN USER=docker && \
+    LOCALHOST=http://127.0.0.1:8000 && \
+    # tsnecuda
+    wget $LOCALHOST/package/pip/tsnecuda-3.0.1+cu118-py3-none-any.whl && \
+    pip3 install tsnecuda-3.0.1+cu118-py3-none-any.whl && \
+    rm tsnecuda-3.0.1+cu118-py3-none-any.whl && \
+    pip3 --no-cache-dir install --upgrade \
+    mkl && \
+    ln -s /usr/local/lib/libmkl_sequential.so.2 /usr/local/lib/libmkl_sequential.so && \
+    ln -s /usr/local/lib/libmkl_core.so.2 /usr/local/lib/libmkl_core.so && \
+    ln -s /usr/local/lib/libmkl_intel_lp64.so.2 /usr/local/lib/libmkl_intel_lp64.so && \
+    echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' >> /home/$USER/.zshrc && \
+    chown -R $USER:$USER /home/$USER/ && \
+    rm -rf /var/lib/apt/lists/* /tmp/*
+RUN USER=docker && \
+    cp -r /root/.config/go /home/$USER/.config/go && \
+    chown -R $USER:$USER /home/$USER/ && \
+    chown -R $USER:$USER /opt/go && \
     rm -rf /var/lib/apt/lists/* /tmp/*
 EXPOSE 8888
 # xyez/python3.8-cuda11.3:torch1.11
